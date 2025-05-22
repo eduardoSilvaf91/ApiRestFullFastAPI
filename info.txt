@@ -1,0 +1,23 @@
+# ---- Para teste - pytest ----
+
+pip install -U pytest
+
+# ---- Para API - fastapi ----
+
+pip install "fastapi[standard]"
+
+# ---- Para tokens - pyjwt ----
+pip install pyjwt
+
+# ---- Para tokensCrypt - passlib[bcrypt] ----
+pip install "passlib[bcrypt]"
+
+# ---- Para connec db - SQLAlchemy ----
+pip install SQLAlchemy
+
+# ---- Para install pip ----
+GET - pip freeze > requirements.txt
+SET - pip install -r requirements.txt
+
+# ---- Exec Docker ----
+docker-compose up --build

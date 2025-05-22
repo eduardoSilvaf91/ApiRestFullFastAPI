@@ -1,0 +1,14 @@
+# Ignora a pasta venv
+venv/
+
+# Ignora arquivos de ambiente (.env)
+.env
+
+# Ignora cache do Python
+__pycache__/
+*.py[cod]
+
+# Outros arquivos desnecessários (opcional)
+*.log
+*.sqlite3
+.DS_Store  # (Mac)

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Teste</h1>
+</body>
+    <script>
+
+    async function Teste(){
+        // Obter token http://127.0.0.1:8000
+        const authResponse = await fetch('http://127.0.0.1:8000/token', {
+        method: 'POST',
+        //mode: 'cors',  // ← Ativa CORS
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            username: 'johndoe',
+            password: 'secret'
+            })
+        });
+
+        const { access_token } = await authResponse.json();
+        console.log(access_token)
+
+        // Acessar endpoint protegido
+        const response = await fetch('http://127.0.0.1:8000/protected', {
+        headers: { 'Authorization': `Bearer ${access_token}` }
+        });
+        const data = await response.json();
+
+        console.log(data);
+    }
+    
+
+    </script>    
+</html>
