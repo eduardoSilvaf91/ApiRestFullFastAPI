@@ -11,22 +11,11 @@
     <script>
 
     async function Teste(){
-        // Obter token http://127.0.0.1:8000
-        const authResponse = await fetch('http://127.0.0.1:8000/token', {
-        method: 'POST',
-        //mode: 'cors',  // ← Ativa CORS
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-            username: 'johndoe',
-            password: 'secret'
-            })
-        });
-
-        const { access_token } = await authResponse.json();
-        console.log(access_token)
+        
+        let access_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huZG9lIiwiZXhwIjoxNzQ3OTU1MTUyfQ.EON3Uwj6igEdGM1DwPZxQUf1bVu0utX92zMiQXmjvFA'
 
         // Acessar endpoint protegido
-        const response = await fetch('http://127.0.0.1:8000/protected', {
+        const response = await fetch('http://127.0.0.1:8000/users/me/', {
         headers: { 'Authorization': `Bearer ${access_token}` }
         });
         const data = await response.json();
