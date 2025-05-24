@@ -61,6 +61,7 @@ class Cliente(Base):
     telefone = Column(String(20))
     endereco = Column(String(200))
     data_nascimento = Column(DateTime)
+    ativo = Column(Boolean, default=True)
     criado_em = Column(DateTime, default=datetime.now(timezone.utc))
     atualizado_em = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
@@ -162,6 +163,22 @@ class TokenBlacklist(Base):
 # Função para criar o banco de dados
 def init_db():
     Base.metadata.create_all(bind=engine)
+    
+    user = Usuario(
+        nome="system",
+        email="system@gmail.com",
+        senha_hash="$2b$12$y7A7Nqkx48EV8pErFNuis.DvV.yYm2So0xAol/vSBU1N.QMynU5da",
+        )
+    
+    # Verifica se o usuário já existe
+    db = SessionLocal()
+    db_user = db.query(Usuario).filter(Usuario.email == user.email).first()
+    
+    if not db_user:
+        # Cria o usuário se não existir
+        db.add(user)
+        db.commit()
+        db.refresh(user)
 
 # Função para obter sessão do banco de dados
 def get_db():
