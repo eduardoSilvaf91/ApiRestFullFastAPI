@@ -9,6 +9,7 @@ API desenvolvida com FastAPI para gerenciamento de usuários, categorias, client
 ## Índice
 
 - [Descrição](#descrição)
+- [Primeiro Acesso](#primeiro-acesso)
 - [Funcionalidades](#funcionalidades)
 - [Tecnologias](#tecnologias)
 - [ModeloBanco](#modelobanco)
@@ -18,12 +19,26 @@ API desenvolvida com FastAPI para gerenciamento de usuários, categorias, client
 - [Endpoints](#endpoints)
 - [Docker](#docker)
 - [Variáveis de Ambiente](#variáveis-de-ambiente)
+- [Primeiro acesso para atenti]
 
 ---
 
 ## Descrição
 
 API RESTful construída com FastAPI que oferece recursos para autenticação (login, registro, refresh token), e gerenciamento de categorias, clientes, endereços, pedidos e produtos.
+
+---
+
+## Primeiro Acesso
+
+Para realizar a autenticação, utilize as seguintes credenciais padrão:
+
+- **Login:** `system@gmail.com`
+- **Senha:** `1234`
+
+Essas credenciais podem ser usadas para obter o token de acesso via o endpoint de **login** (`/login`).
+
+**⚠️ Importante:** Por questões de segurança, recomenda-se alterar a senha padrão após o primeiro acesso.
 
 ---
 
