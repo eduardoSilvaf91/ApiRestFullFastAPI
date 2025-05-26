@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 class Token(BaseModel):
     access_token: str
@@ -16,3 +16,18 @@ class UserRegister(BaseModel):
     name: str
     email: EmailStr
     password: str
+    
+    
+class UserUpdate(BaseModel):
+    name: str | None = None
+    email: EmailStr | None = None
+    password: str | None = None
+    active: bool | None = None
+    
+class UserOut(BaseModel):
+    id: int
+    nome: str
+    ativo: bool
+
+    class Config:
+        from_attributes = True

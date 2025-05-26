@@ -3,7 +3,7 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 from fastapi import HTTPException, status, Depends
-from connectDB.database import Usuario
+from connectDB.database import Usuario, Pedido
 from schemas.auth import TokenData, UserLogin, UserRegister
 from sqlalchemy.orm import Session
 import os
@@ -23,7 +23,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 async def authenticate_user(email: str, password: str, db: Session):
-    user = db.query(Usuario).filter(Usuario.email == email).first()
+    user = db.query(Usuario).filter(Usuario.email == email, Usuario.ativo == True).first()
     if not user or not verify_password(password, user.senha_hash):
         return None
     return user
@@ -120,3 +120,63 @@ def verify_token(token: str):
         return payload
     except InvalidTokenError:
         raise HTTPException(status_code=400, detail="Invalid token")
+    
+    
+async def get_user(db: Session):
+    db_user = db.query(Usuario).all()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Formata cada resultado como um dicionário
+    return [{
+        "id": user.id,
+        "nome": user.nome,
+        "ativo": user.ativo
+    } for user in db_user]
+
+async def update_user(user_id: int, user_update: UserRegister, db: Session):
+    db_user = db.query(Usuario).filter(Usuario.id == user_id).first()
+    
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Atualiza os campos
+    db_user.nome = user_update.name if user_update.name is not None else db_user.nome
+    db_user.email = user_update.email if user_update.email is not None else db_user.email
+    db_user.senha_hash = get_password_hash(user_update.password) if user_update.password is not None else db_user.senha_hash
+    db_user.ativo = user_update.active if user_update.active is not None else db_user.ativo
+    db_user.atualizado_em = datetime.now(timezone.utc)
+    
+    db.commit()
+    db.refresh(db_user)
+    return {"detail": "User updated successfully", "user": db_user}
+
+async def delete_user(user_id: int, db: Session):
+    db_user = db.query(Usuario).filter(Usuario.id == user_id).first()
+    
+    # Verifica se o usuário existe
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Conta quantos usuários existem no total
+    total_users = db.query(Usuario).count()
+    
+    if total_users <= 1:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete the only user in the system."
+        )
+    
+    # Verifica se o usuário possui pedidos associados
+    has_orders = db.query(Pedido).filter(Pedido.usuario_id == user_id).first() is not None
+
+    if has_orders:
+        db_user.ativo = False
+        db_user.atualizado_em = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(db_user)
+        return {"detail": "User has orders. Marked as inactive."}
+    else:
+        db.delete(db_user)
+        db.commit()
+        return {"detail": "User deleted successfully"}
