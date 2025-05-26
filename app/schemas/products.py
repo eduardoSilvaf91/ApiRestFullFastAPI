@@ -1,43 +1,51 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List
 from enum import Enum
 
-class ProductStatus(str, Enum):
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    OUT_OF_STOCK = "out_of_stock"
 
 class ImageBase(BaseModel):
     url: str
-    order: int
+    order: int = Field(..., alias="ordem")
+
+class Image(ImageBase):
+    id: int
+    created_at: datetime = Field(None, alias="criado_em")
+    produto_id: int = Field(..., alias="produto_id")
+    criado_em: datetime = Field(None, alias="criado_em")
+    
+    class Config:
+        from_attributes = True
+ 
 
 class ProductBase(BaseModel):
-    name: str
-    description: str
-    sale_price: float
-    barcode: Optional[str] = None
-    category_id: int
-    stock: int = 0
-    min_stock: int = 5
-    expiry_date: Optional[datetime] = None
-    status: ProductStatus = ProductStatus.ACTIVE
+    name: str = Field(..., alias="nome")
+    description: str = Field(..., alias="descricao")
+    sale_price: float = Field(..., alias="valor_venda")
+    barcode: Optional[str] = Field(None, alias="codigo_barras")
+    category_id: int = Field(..., alias="categoria_id")
+    stock: int = Field(0, alias="estoque")
+    min_stock: int = Field(5, alias="estoque_minimo")
+    expiry_date: Optional[datetime] = Field(None, alias="data_validade")
+    status: bool = Field(True, alias="ativo")
 
 class ProductCreate(ProductBase):
     images: Optional[List[ImageBase]] = None
 
 class ProductUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    sale_price: Optional[float] = None
-    stock: Optional[int] = None
-    status: Optional[ProductStatus] = None
+    name: Optional[str] | None = Field(None, alias="nome")
+    description: Optional[str] | None = Field(None, alias="descricao")
+    sale_price: Optional[float] | None = Field(None, alias="valor_venda")
+    stock: Optional[int] | None = Field(None, alias="estoque")
+    min_stock: Optional[int] | None = Field(5, alias="estoque_minimo")
+    status: Optional[bool] | None = Field(None, alias="ativo")
+    expiry_date: Optional[datetime] = Field(None, alias="data_validade")
 
 class Product(ProductBase):
     id: int
-    created_at: datetime
-    updated_at: datetime
-    images: List[ImageBase] = []
+    created_at: datetime = Field(None, alias="criado_em")
+    updated_at: datetime = Field(None, alias="atualizado_em")
+    images: List[Image] = Field([], alias="imagens")
 
     class Config:
         from_attributes = True

@@ -1,10 +1,11 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from connectDB.database import Produto, ImagemProduto, CategoriaProduto, ItemPedido
-from schemas.products import ProductCreate, ProductUpdate, ProductStatus
+from schemas.products import ProductCreate, ProductUpdate, Product
 from datetime import datetime, timezone
 from typing import List
 from fastapi import HTTPException, status
 
+# GET
 async def get_products(
     db: Session,
     skip: int = 0,
@@ -35,6 +36,7 @@ async def get_products(
     
     return query.offset(skip).limit(limit).all()
 
+# PUT
 async def create_product(db: Session, product: ProductCreate):
     """Cria um novo produto com validações"""
     # Verifica se categoria existe
@@ -58,8 +60,6 @@ async def create_product(db: Session, product: ProductCreate):
                 detail="Barcode already exists"
             )
     
-    # Converte status para booleano (ativo/inativo)
-    is_active = product.status == ProductStatus.ACTIVE
     
     # Cria o produto
     db_product = Produto(
@@ -71,7 +71,7 @@ async def create_product(db: Session, product: ProductCreate):
         estoque=product.stock,
         estoque_minimo=product.min_stock,
         data_validade=product.expiry_date,
-        ativo=is_active,
+        ativo=product.status,
         criado_em=datetime.now(timezone.utc),
         atualizado_em=datetime.now(timezone.utc)
     )
@@ -94,16 +94,22 @@ async def create_product(db: Session, product: ProductCreate):
     
     return db_product
 
+# GET
 async def get_product(db: Session, id: int):
     """Obtém um produto específico por ID"""
-    product = db.query(Produto).filter(Produto.id == id).first()
+    
+    product = db.query(Produto).options(joinedload(Produto.imagens)).filter(Produto.id == id).first()
     if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
         )
-    return product
+    
+    # Convertendo para o schema Product que inclui imagens
+    return Product.model_validate(product)
 
+
+# UPDATE
 async def update_product(db: Session, id: int, product: ProductUpdate):
     """Atualiza um produto existente"""
     db_product = db.query(Produto).filter(Produto.id == id).first()
@@ -125,7 +131,7 @@ async def update_product(db: Session, id: int, product: ProductUpdate):
     if product.min_stock is not None:
         db_product.estoque_minimo = product.min_stock
     if product.status is not None:
-        db_product.ativo = product.status == ProductStatus.ACTIVE
+        db_product.ativo = product.status
     if product.expiry_date is not None:
         db_product.data_validade = product.expiry_date
     
@@ -134,6 +140,7 @@ async def update_product(db: Session, id: int, product: ProductUpdate):
     db.refresh(db_product)
     return db_product
 
+# DELETE
 async def delete_product(db: Session, id: int):
     """Remove um produto (soft delete ou físico)"""
     db_product = db.query(Produto).filter(Produto.id == id).first()
@@ -160,6 +167,7 @@ async def delete_product(db: Session, id: int):
         db.commit()
         return {"message": "Product permanently deleted"}
 
+# UPDATE
 async def update_product_stock(db: Session, product_id: int, quantity_change: int):
     """Atualiza o estoque de um produto (usado ao processar pedidos)"""
     product = await get_product(db, product_id)

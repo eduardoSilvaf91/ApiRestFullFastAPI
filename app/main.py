@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, clients, products, orders
+from routers import auth, clients, products, orders, categories
 from connectDB.database import init_db
 
 
@@ -23,3 +23,4 @@ app.include_router(auth.router, prefix="/auth", tags=["Autenticação"])
 app.include_router(clients.router, prefix="/clients", tags=["Clientes"])
 app.include_router(products.router, prefix="/products", tags=["Produtos"])
 app.include_router(orders.router, prefix="/orders", tags=["Pedidos"])
+app.include_router(categories.router, prefix="/categories", tags=["Categorias"])

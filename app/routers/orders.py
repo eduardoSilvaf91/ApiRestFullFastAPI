@@ -39,8 +39,10 @@ async def add_order(
     order: OrderCreate, 
     db=Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
+    
 ):
     return await create_order(db, order, current_user.id)
+    
 
 @router.get("/{id}", response_model=Order)
 async def read_order(

@@ -74,6 +74,8 @@ class CategoriaProduto(Base):
     nome = Column(String(50), unique=True, nullable=False)
     descricao = Column(String(200))
     ativo = Column(Boolean, default=True)
+    criado_em = Column(DateTime, default=datetime.now(timezone.utc))
+    atualizado_em = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
     produtos = relationship("Produto", back_populates="categoria")
 
