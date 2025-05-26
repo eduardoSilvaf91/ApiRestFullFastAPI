@@ -25,7 +25,7 @@ async def list_orders(
     status: Optional[str] = None,
     client_id: Optional[int] = None,
     db=Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     return await get_orders(
         db, skip, limit, 
@@ -38,18 +38,18 @@ async def list_orders(
 async def add_order(
     order: OrderCreate, 
     db=Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
     
 ):
-    # return await create_order(db, order, current_user.id)
-    return await create_order(db, order, 1)  # Temporarily using 1 as user ID for testing
+    return await create_order(db, order, current_user.id)
+    # return await create_order(db, order, 1)  # Temporarily using 1 as user ID for testing
     
 
 @router.get("/{id}", response_model=Order)
 async def read_order(
     id: int,
     db=Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     order = await get_order(db, id)
     if not order:
@@ -61,7 +61,7 @@ async def edit_order(
     id: int, 
     order: OrderUpdate, 
     db=Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     return await update_order(db, id, order)
 
@@ -69,6 +69,6 @@ async def edit_order(
 async def remove_order(
     id: int, 
     db=Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     await delete_order(db, id)

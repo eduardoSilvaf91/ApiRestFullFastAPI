@@ -22,7 +22,7 @@ async def list_products(
     max_price: Optional[float] = None,
     in_stock: Optional[bool] = None,
     db=Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     return await get_products(
         db, skip, limit, 
@@ -33,7 +33,7 @@ async def list_products(
 async def add_product(
     product: ProductCreate, 
     db=Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     return await create_product(db, product)
 
@@ -41,7 +41,7 @@ async def add_product(
 async def read_product(
     id: int,
     db=Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)    
+    current_user: Usuario = Depends(get_current_user)    
 ):
     product = await get_product(db, id)
     if not product:
@@ -53,7 +53,7 @@ async def edit_product(
     id: int, 
     product: ProductUpdate, 
     db=Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     return await update_product(db, id, product)
 
@@ -61,6 +61,6 @@ async def edit_product(
 async def remove_product(
     id: int, 
     db=Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     await delete_product(db, id)

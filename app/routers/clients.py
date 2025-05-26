@@ -35,7 +35,7 @@ async def list_clients(
     name: str | None = None,
     email: str | None = None,
     db=Depends(get_db),
-    #current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
     ):
     
     return await get_clients(db, skip, limit, name, email)
@@ -44,7 +44,7 @@ async def list_clients(
 async def add_client(
     client: ClientCreate,
     db=Depends(get_db),
-    #current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
     ):
     
     return await create_client(db, client)
@@ -53,7 +53,7 @@ async def add_client(
 async def read_client(
     id: int,
     db=Depends(get_db),
-    #current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
     ):
     
     return await get_client(db, id)
@@ -63,7 +63,7 @@ async def edit_client(
     id: int,
     client: ClientUpdate,
     db=Depends(get_db),
-    #current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
     ):
     
     return await update_client(db, id, client)
@@ -72,7 +72,7 @@ async def edit_client(
 async def remove_client(
     id: int,
     db=Depends(get_db),
-    #current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
     ):
     
     await delete_client(db, id)
@@ -86,8 +86,8 @@ async def read_client_addresses(
     id_client: int,
     id_address: Optional[int] = None,
     is_primary_address: Optional[bool] = None,
-    db=Depends(get_db)
-    #current_user: Usuario = Depends(get_current_user)
+    db=Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
 ):
     return await get_addresses(db, id_client, id_address, is_primary_address)
 
@@ -96,8 +96,8 @@ async def read_client_addresses(
 async def create_client_address(
     id_client: int,
     address: AddressCreate,
-    db= Depends(get_db)
-    #current_user: Usuario = Depends(get_current_user)
+    db= Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
 ):
     return await create_address(db, id_client, address)
 
@@ -107,7 +107,7 @@ async def update_client_address(
     address_id: int,
     address: AddressUpdate,
     db=Depends(get_db),
-    #current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     return await update_address(db, id_client, address_id, address)
 
@@ -115,7 +115,7 @@ async def update_client_address(
 async def delete_client_address(
     client_id: int,
     address_id: int,
-    db= Depends(get_db)
-    #current_user: Usuario = Depends(get_current_user)
+    db= Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
 ):
     await delete_address(db, client_id, address_id)

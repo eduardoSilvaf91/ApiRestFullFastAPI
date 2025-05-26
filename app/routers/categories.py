@@ -24,7 +24,7 @@ router = APIRouter()
 async def create_category(
     category: CategoryCreate,
     db: Session = Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     return create_category_service(db, category)
 
@@ -39,7 +39,7 @@ async def read_categories(
     limit: int = 100,
     active: bool | None = None,
     db: Session = Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     return get_categories_service(db, skip, limit, active)
 
@@ -52,7 +52,7 @@ async def read_categories(
 async def read_category(
     id: int,
     db: Session = Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     return get_category_service(db, id)
 
@@ -66,7 +66,7 @@ async def update_category(
     id: int,
     category_update: CategoryUpdate,
     db: Session = Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     return update_category_service(db, id, category_update)
 
@@ -79,6 +79,6 @@ async def update_category(
 async def delete_category(
     id: int,
     db: Session = Depends(get_db),
-    # current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     delete_category_service(db, id)
