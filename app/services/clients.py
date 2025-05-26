@@ -1,21 +1,12 @@
 from sqlalchemy.orm import Session
-from connectDB.database import Cliente, Pedido
-from schemas.clients import ClientCreate, ClientUpdate
-from datetime import datetime, timezone
+from connectDB.database import Cliente, Endereco, Pedido
+from schemas.clients import ClientCreate, ClientUpdate, AddressCreate
+from services.address import get_addresses, create_address
+from services.utilities import remove_special_characters, validate_cpf
+from datetime import datetime, timezone, date
 from fastapi import HTTPException, status
-import re
 
-def validate_cpf(cpf: str):
-    """Validação simples de CPF (pode ser implementada a validação real)"""
-    cpf = remove_special_characters(cpf)
-    
-    if len(cpf) != 11 or not cpf.isdigit():
-        return False
-    return True
-
-def remove_special_characters(cpf: str):
-    """Remove caracteres especiais de um CPF"""
-    return re.sub(r'[^0-9]', '', cpf)
+from typing import List
 
 async def get_clients(
     db: Session, 
@@ -23,17 +14,24 @@ async def get_clients(
     limit: int = 100,
     name: str | None = None,
     email: str | None = None,
-    active: bool | None = None
+    active: bool | None = None,
+    city: str | None = None
 ):
     """Lista clientes com filtros"""
     query = db.query(Cliente)
     
     if name:
-        query = query.filter(Cliente.nome.ilike(f"%{name}%"))
+        query = query.filter((Cliente.nome.ilike(f"%{name}%")) | (Cliente.sobrenome.ilike(f"%{name}%")))
     if email:
         query = query.filter(Cliente.email.ilike(f"%{email}%"))
     if active is not None:
         query = query.filter(Cliente.ativo == active)
+        
+    if city:
+        query = query.join(Endereco).filter(
+            Endereco.cidade.ilike(f"%{city}%"),
+            Endereco.principal == True
+        )
     
     return query.offset(skip).limit(limit).all()
 
@@ -48,8 +46,7 @@ async def create_client(db: Session, client: ClientCreate):
     
     # Verifica se email já existe
     existing_email = db.query(Cliente).filter(
-        Cliente.email == client.email
-    ).first()
+        Cliente.email == client.email).first()
     if existing_email:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -69,11 +66,11 @@ async def create_client(db: Session, client: ClientCreate):
         )
     
     db_client = Cliente(
-        nome=client.name,
+        nome=client.first_name,
+        sobrenome=client.last_name,
         email=client.email,
         cpf=client.cpf,
         telefone=client.phone,
-        endereco=client.address,
         data_nascimento=client.birth_date,
         ativo=True,
         criado_em=datetime.now(timezone.utc),
@@ -83,7 +80,41 @@ async def create_client(db: Session, client: ClientCreate):
     db.add(db_client)
     db.commit()
     db.refresh(db_client)
+    
+    
+    if client.addresses and len(client.addresses) > 0:
+        
+        for address in client.addresses:
+            
+            data = AddressCreate(
+                street=address.street,
+                number=address.number,
+                complement=address.complement,
+                neighborhood=address.neighborhood,
+                city=address.city,
+                state=address.state,
+                zip_code=address.zip_code,
+                is_primary=address.is_primary
+            )
+            
+            # Cria cada endereço usando a função existente
+            await create_address(db, db_client.id, data)
+        
+        db.refresh(db_client)
+    
     return db_client
+    
+    
+    
+    
+    
+    # Adiciona endereços se fornecidos
+    if client.addresses:
+        await get_addresses(db, db_client.id, client.addresses)
+        db.refresh(db_client)
+    
+    return db_client
+
 
 async def get_client(db: Session, id: int):
     """Obtém um cliente por ID"""
@@ -105,8 +136,10 @@ async def update_client(db: Session, id: int, client: ClientUpdate):
         )
     
     # Atualiza apenas os campos fornecidos
-    if client.name is not None:
-        db_client.nome = client.name
+    if client.first_name is not None:
+        db_client.nome = client.first_name
+    if client.last_name is not None:
+        db_client.sobrenome = client.last_name
     if client.email is not None:
         # Verifica se novo email já existe
         if client.email != db_client.email:
@@ -121,13 +154,12 @@ async def update_client(db: Session, id: int, client: ClientUpdate):
         db_client.email = client.email
     if client.phone is not None:
         db_client.telefone = client.phone
-    if client.address is not None:
-        db_client.endereco = client.address
     
     db_client.atualizado_em = datetime.now(timezone.utc)
     db.commit()
     db.refresh(db_client)
     return db_client
+
 
 async def delete_client(db: Session, id: int):
     """Remove um cliente (soft delete)"""
@@ -151,6 +183,10 @@ async def delete_client(db: Session, id: int):
         return {"message": "Client deactivated (has existing orders)"}
     else:
         # Delete físico (se não tiver pedidos)
+        
+        # Remove endereços primeiro
+        db.query(Endereco).filter(Endereco.cliente_id == id).delete()
+        # Delete físico do cliente
         db.delete(db_client)
         db.commit()
         return {"message": "Client permanently deleted"}

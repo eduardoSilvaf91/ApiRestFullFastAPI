@@ -51,21 +51,38 @@ class Usuario(Base):
 
     pedidos = relationship("Pedido", back_populates="usuario")
 
+class Endereco(Base):
+    __tablename__ = "enderecos"
+    
+    id = Column(Integer, primary_key=True)
+    cliente_id = Column(Integer, ForeignKey('clientes.id'))
+    logradouro = Column(String(100))
+    numero = Column(String(20))
+    complemento = Column(String(50), nullable=True)
+    bairro = Column(String(50))
+    cidade = Column(String(50))
+    estado = Column(String(2))
+    cep = Column(String(9))
+    principal = Column(Boolean, default=True)
+    
+    cliente = relationship("Cliente", back_populates="enderecos")
+
 class Cliente(Base):
     __tablename__ = "clientes"
 
     id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String(100), nullable=False)
+    nome = Column(String(50), nullable=False)
+    sobrenome = Column(String(50), nullable=False)
     email = Column(String(100), unique=True, index=True, nullable=False)
     cpf = Column(String(11), unique=True, nullable=False)
     telefone = Column(String(20))
-    endereco = Column(String(200))
     data_nascimento = Column(DateTime)
     ativo = Column(Boolean, default=True)
     criado_em = Column(DateTime, default=datetime.now(timezone.utc))
     atualizado_em = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
     pedidos = relationship("Pedido", back_populates="cliente")
+    enderecos = relationship("Endereco", back_populates="cliente")
 
 class CategoriaProduto(Base):
     __tablename__ = "categorias_produto"
