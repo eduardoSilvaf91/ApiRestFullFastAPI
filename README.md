@@ -19,7 +19,6 @@ API desenvolvida com FastAPI para gerenciamento de usuários, categorias, client
 - [Endpoints](#endpoints)
 - [Docker](#docker)
 - [Variáveis de Ambiente](#variáveis-de-ambiente)
-- [Primeiro acesso para atenti]
 
 ---
 
